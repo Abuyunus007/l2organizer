@@ -1,0 +1,80 @@
+{% extends "portal_base.html" %}
+
+{% block title %}{{ char_name }} — offline shop{% endblock %}
+{% block who %}{{ login }}{% if is_gm %} <span class="badge gm">GM</span>{% endif %}{% endblock %}
+
+{% block content %}
+{% include "char_nav.html" %}
+{% if !msg.is_empty() %}
+<div class="msg {% if msg_ok %}ok{% else %}err{% endif %}">{{ msg }}</div>
+{% endif %}
+
+<div class="card">
+  <h3>Offline Shop</h3>
+  <p class="cap">
+    Shops stored here open in game after the next game server restart and stay online while the character is logged out.
+    {% if !offline_trade_enabled && !offline_craft_enabled %}Offline shops are disabled in the server config.{% endif %}
+  </p>
+
+  {% if let Some(s) = shop %}
+  <div class="shopbox">
+    <b>{{ s.kind_label }}</b> "{{ s.title }}" <span class="muted">(stored {{ s.when }})</span>
+    <table>
+      <thead><tr><th>Item</th><th>Count</th><th>Price / unit</th></tr></thead>
+      <tbody>
+        {% for it in s.items %}
+        <tr><td><img src="{{ it.icon }}" class="cicon" alt=""> {{ it.label }}</td><td>{{ it.count }}</td><td>{{ it.price }} adena</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if !online %}
+    <form method="post" action="/my/char/{{ char_id }}/shop/delete" onsubmit="return confirm('Remove this offline shop?')">
+      <button type="submit" class="danger">Remove shop</button>
+    </form>
+    {% endif %}
+  </div>
+  {% else %}
+  <p class="empty">No offline shop stored.</p>
+  {% endif %}
+
+  {% if online %}
+  <p class="muted">Character is online — shop changes disabled until logout.</p>
+  {% else %}
+    {% if offline_trade_enabled %}
+    <form method="post" action="/my/char/{{ char_id }}/shop">
+      <input type="hidden" name="kind" value="sell">
+      <h4>Create / replace sell shop (WTS)</h4>
+      <input class="title-input" type="text" name="title" maxlength="50" placeholder="Shop title, e.g. WTS cheap materials">
+      <table>
+        {% for it in inventory %}
+        <tr>
+          <td><label><input type="checkbox" name="item" value="{{ it.object_id }}"> <img src="{{ it.icon_url }}" class="cicon" alt=""> {{ it.name }}{% if !it.enchant.is_empty() %} <span style="color:#7ec8e3">{{ it.enchant }}</span>{% endif %}</label></td>
+          <td>count <input class="qty" type="number" name="count_{{ it.object_id }}" value="{{ it.count }}" min="1" max="{{ it.count }}"></td>
+          <td>price <input class="qty" type="number" name="price_{{ it.object_id }}" value="0" min="0"></td>
+        </tr>
+        {% endfor %}
+      </table>
+      <button type="submit">Save sell shop</button>
+    </form>
+    <p class="cap">Items stay in your inventory until sold in the shop.</p>
+    {% endif %}
+
+    {% if offline_craft_enabled && !craft_recipes.is_empty() %}
+    <form method="post" action="/my/char/{{ char_id }}/shop">
+      <input type="hidden" name="kind" value="craft">
+      <h4>Create / replace craft shop (dwarven manufacturing)</h4>
+      <input class="title-input" type="text" name="title" maxlength="50" placeholder="Craft shop title, e.g. Craft everything cheap">
+      <table>
+        {% for r in craft_recipes %}
+        <tr>
+          <td><label><input type="checkbox" name="item" value="{{ r.id }}"> <img src="{{ r.product_icon }}" class="cicon" alt=""> {{ r.name }} → {{ r.product_name }}</label></td>
+          <td>fee <input class="qty" type="number" name="price_{{ r.id }}" value="0" min="0"></td>
+        </tr>
+        {% endfor %}
+      </table>
+      <button type="submit" class="clan">Save craft shop</button>
+    </form>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

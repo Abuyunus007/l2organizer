@@ -1,0 +1,18 @@
+[package]
+name = "l2o-core"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sqlx.workspace = true
+chrono.workspace = true
+dotenvy.workspace = true
+tracing.workspace = true
+roxmltree.workspace = true
+argon2 = "0.5"
+sha1 = "0.10"
+base64 = "0.22"

@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}{{ char_name }} — l2organizer{% endblock %}
+
+{% block content %}
+{% if !msg.is_empty() %}
+<div class="msgdiv {% if msg_ok %}ok{% else %}err{% endif %}">{{ msg }}</div>
+{% endif %}
+<div class="card">
+  <h2>
+    {{ char_name }} <span class="muted">#{{ char_id }}</span>
+    {% if online %}<span class="badge online">online</span>{% endif %}
+    {% if nobless %}<span class="badge nobless">noblesse</span>{% endif %}
+    {% if accesslevel > 0 %}<span class="badge gm">GM {{ accesslevel }}</span>{% endif %}
+  </h2>
+  <table>
+    <tbody>
+      <tr><th>Account</th><td><a href="/accounts?q={{ account_name }}">{{ account_name }}</a></td>
+          <th>Level</th><td>{{ level }}</td>
+          <th>Class</th><td>{{ classid }}</td></tr>
+      <tr><th>Race</th><td>{{ race }}</td>
+          <th>Clan</th><td>{{ clan_name }}</td>
+          <th>Title</th><td>{{ title }}</td></tr>
+      <tr><th>Karma</th><td>{{ karma }}</td>
+          <th>PvP/PK</th><td>{{ pvp_pk }}</td>
+          <th>Vitality</th><td>{{ vitality_points }}</td></tr>
+      <tr><th>SP</th><td>{{ sp }}</td>
+          <th>EXP</th><td>{{ exp }}</td>
+          <th>Position</th><td>{{ position }}</td></tr>
+      <tr><th>Created</th><td>{{ create_date }}</td>
+          <th>Last access</th><td>{{ last_access }}</td>
+          <th>Delete pending</th><td>{{ delete_pending }}</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h3>Admin actions</h3>
+
+  {% if delete_pending != "-" %}
+  <form method="post" action="/chars/{{ char_id }}/restore" class="rowform" onsubmit="return confirm('Restore this character (cancel deletion)?')">
+    <span class="muted">Deletion pending ({{ delete_pending }})</span>
+    <button type="submit">Restore character</button>
+  </form>
+  {% endif %}
+
+  <h4>Edit character (empty fields stay unchanged)</h4>
+  <form method="post" action="/chars/{{ char_id }}/edit" onsubmit="return confirm('Apply these changes?')">
+    <div class="editgrid">
+      <input type="text" name="char_name" maxlength="16" placeholder="name (A-Z0-9, max 16)">
+      <input type="number" name="level" min="1" max="100" placeholder="level">
+      <input type="number" name="exp" min="0" placeholder="exp">
+      <input type="number" name="sp" min="0" placeholder="sp">
+      <input type="number" name="karma" min="0" placeholder="karma">
+      <input type="text" name="title" maxlength="21" placeholder="title (max 21)">
+      <input type="number" name="face" min="0" max="10" placeholder="face 0-10">
+      <input type="number" name="hair_style" min="0" max="10" placeholder="hair 0-10">
+      <input type="number" name="hair_color" min="0" max="10" placeholder="hair color 0-10">
+      <input type="number" name="sex" min="0" max="1" placeholder="sex 0/1">
+      <input type="number" name="access_level" min="-100" max="127" placeholder="char GM level">
+      <select name="nobless">
+        <option value="">noblesse: unchanged</option>
+        <option value="yes">noblesse: yes</option>
+        <option value="no">noblesse: no</option>
+      </select>
+    </div>
+    <button type="submit">Apply changes</button>
+  </form>
+
+  <h4>Grant item</h4>
+  <form method="post" action="/chars/{{ char_id }}/grant" class="rowform" onsubmit="return confirm('Grant this item?')">
+    <input type="text" name="item_id" placeholder="item id" style="width:110px" required>
+    <input type="text" name="count" placeholder="count" style="width:80px">
+    <input type="text" name="enchant" placeholder="enchant" style="width:80px">
+    <button type="submit">Grant</button>
+  </form>
+
+  <h4>Remove item (object id, from grid tooltip)</h4>
+  <form method="post" action="/chars/{{ char_id }}/remove" class="rowform" onsubmit="return confirm('Remove this item? Undo available under Ops.')">
+    <input type="text" name="object_id" placeholder="object id" style="width:150px" required>
+    <button type="submit" class="dangerbtn">Remove</button>
+  </form>
+</div>
+
+<div class="card">
+  <h3>Inventory ({{ inventory.len() }})</h3>
+  {% if inventory.is_empty() %}
+    <p class="muted">No items in inventory.</p>
+  {% else %}
+  <div class="grid">
+    {% for it in inventory %}
+    <div class="slot" title="{{ it.name }} (id {{ it.item_id }}) x{{ it.count }}">
+      <img src="{{ it.icon_url }}" alt="{{ it.item_id }}" loading="lazy">
+      {% if !it.enchant.is_empty() %}<span class="ench">{{ it.enchant }}</span>{% endif %}
+      {% if it.count > 1 %}<span class="cnt">{{ it.count }}</span>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+{% if !warehouse.is_empty() %}
+<div class="card">
+  <h3>Warehouse ({{ warehouse.len() }})</h3>
+  <div class="grid">
+    {% for it in warehouse %}
+    <div class="slot" title="{{ it.name }} (id {{ it.item_id }}) x{{ it.count }}">
+      <img src="{{ it.icon_url }}" alt="{{ it.item_id }}" loading="lazy">
+      {% if !it.enchant.is_empty() %}<span class="ench">{{ it.enchant }}</span>{% endif %}
+      {% if it.count > 1 %}<span class="cnt">{{ it.count }}</span>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Admin ops — l2organizer{% endblock %}
+
+{% block content %}
+{% if !msg.is_empty() %}
+<div class="msgdiv {% if msg_ok %}ok{% else %}err{% endif %}">{{ msg }}</div>
+{% endif %}
+
+<div class="card">
+  <h2>Admin operations</h2>
+  <p class="muted">All write operations performed through this tool. Each entry can be reverted once (undo restores the previous state).</p>
+  <table>
+    <thead>
+      <tr><th>When</th><th>By</th><th>Action</th><th>Target</th><th>Details</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for o in ops %}
+      <tr>
+        <td>{{ o.when }}</td>
+        <td>{{ o.actor }}</td>
+        <td>{{ o.action }}</td>
+        <td>{{ o.target }}</td>
+        <td>{{ o.summary }}</td>
+        <td>
+          {% if o.undone %}
+          <span class="badge">undone {{ o.undone_info }}</span>
+          {% else %}
+          <span class="badge online">active</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if !o.undone %}
+          <form method="post" action="/ops/{{ o.id }}/undo" onsubmit="return confirm('Revert this operation?')">
+            <button type="submit">Undo</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if ops.is_empty() %}<p class="muted">No operations recorded yet.</p>{% endif %}
+</div>
+{% endblock %}

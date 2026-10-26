@@ -1,0 +1,132 @@
+{% extends "portal_base.html" %}
+
+{% block title %}{{ char_name }} — items{% endblock %}
+{% block who %}{{ login }}{% if is_gm %} <span class="badge gm">GM</span>{% endif %}{% endblock %}
+
+{% block content %}
+{% include "char_nav.html" %}
+{% if !msg.is_empty() %}
+<div class="msg {% if msg_ok %}ok{% else %}err{% endif %}">{{ msg }}</div>
+{% endif %}
+
+<script>
+function toggleCol(cb, cls) {
+  document.querySelectorAll('.' + cls).forEach(function (c) { c.checked = cb.checked; });
+}
+</script>
+
+<div class="cols">
+
+  <form method="post" action="/my/char/{{ char_id }}/batch">
+    <div class="card">
+      <h3>
+        Inventory
+        {% if !online %}
+        <label class="selall"><input type="checkbox" onclick="toggleCol(this, 'chk-inv')"> select all</label>
+        <label class="selall"><input type="checkbox" onclick="toggleCol(this, 'mat-inv')"> materials</label>
+        {% endif %}
+      </h3>
+      <p class="cap">{{ inv_used }} / {{ inv_limit }} slots · <span class="hint">green = crafting material</span></p>
+      {% if inventory.is_empty() %}
+      <p class="empty">Inventory is empty.</p>
+      {% else %}
+      {% for it in inventory %}
+      <div class="item-row{% if it.is_material %} material{% endif %}">
+        {% if !online %}<input class="check chk-inv{% if it.is_material %} mat-inv{% endif %}" type="checkbox" name="oids" value="{{ it.object_id }}">{% endif %}
+        <img src="{{ it.icon_url }}" alt="" loading="lazy">
+        <div class="meta">
+          <div class="nm">{{ it.name }}{% if !it.enchant.is_empty() %} <span style="color:#7ec8e3">{{ it.enchant }}</span>{% endif %}</div>
+          <div class="sub">x{{ it.count }} · id {{ it.item_id }}{% if !it.crystal_hint.is_empty() %} · <span class="hint">→ {{ it.crystal_hint }}</span>{% endif %}</div>
+        </div>
+      </div>
+      {% endfor %}
+      {% if !online %}
+      <div class="tools">
+        <button type="submit" name="action" value="to_wh" title="Move selected to personal warehouse">→ Warehouse</button>
+        {% if in_clan %}
+        <button type="submit" name="action" value="to_clan" class="clan" title="Deposit selected into clan warehouse">→ Clan WH</button>
+        {% endif %}
+        <button type="submit" name="action" value="crystallize" class="warn" onclick="return confirm('Crystallize the selected items? They will be destroyed and you receive crystals.')">Crystallize</button>
+        {% if sell_rate_percent > 0 %}
+        <button type="submit" name="action" value="sell" class="warn" onclick="return confirm('Sell the selected stacks for {{ sell_rate_percent }}% of their item price?')">Sell ({{ sell_rate_percent }}%)</button>
+        {% endif %}
+        <button type="submit" name="action" value="delete" class="danger" onclick="return confirm('Permanently DELETE the selected items? This cannot be undone.')">Delete</button>
+      </div>
+      {% endif %}
+      {% endif %}
+    </div>
+  </form>
+
+  <form method="post" action="/my/char/{{ char_id }}/batch">
+    <div class="card">
+      <h3>
+        Personal Warehouse
+        {% if !online %}
+        <label class="selall"><input type="checkbox" onclick="toggleCol(this, 'chk-wh')"> select all</label>
+        <label class="selall"><input type="checkbox" onclick="toggleCol(this, 'mat-wh')"> materials</label>
+        {% endif %}
+      </h3>
+      <p class="cap">{{ wh_used }} / {{ wh_limit }} slots</p>
+      {% if warehouse.is_empty() %}
+      <p class="empty">Warehouse is empty.</p>
+      {% else %}
+      {% for it in warehouse %}
+      <div class="item-row{% if it.is_material %} material{% endif %}">
+        {% if !online %}<input class="check chk-wh{% if it.is_material %} mat-wh{% endif %}" type="checkbox" name="oids" value="{{ it.object_id }}">{% endif %}
+        <img src="{{ it.icon_url }}" alt="" loading="lazy">
+        <div class="meta">
+          <div class="nm">{{ it.name }}{% if !it.enchant.is_empty() %} <span style="color:#7ec8e3">{{ it.enchant }}</span>{% endif %}</div>
+          <div class="sub">x{{ it.count }} · id {{ it.item_id }}</div>
+        </div>
+      </div>
+      {% endfor %}
+      {% if !online %}
+      <div class="tools">
+        <button type="submit" name="action" value="wh_to_inv" title="Withdraw selected to inventory">← Inventory</button>
+        <button type="submit" name="action" value="delete" class="danger" onclick="return confirm('Permanently DELETE the selected items? This cannot be undone.')">Delete</button>
+      </div>
+      {% endif %}
+      {% endif %}
+    </div>
+  </form>
+
+  {% if in_clan %}
+  <form method="post" action="/my/char/{{ char_id }}/batch">
+    <div class="card">
+      <h3>
+        Clan Warehouse
+        {% if is_leader %}<span class="badge gm">leader</span>{% endif %}
+        {% if !online && can_withdraw_clan %}
+        <label class="selall"><input type="checkbox" onclick="toggleCol(this, 'chk-clan')"> select all</label>
+        <label class="selall"><input type="checkbox" onclick="toggleCol(this, 'mat-clan')"> materials</label>
+        {% endif %}
+      </h3>
+      <p class="cap">
+        {{ clan_used }} / {{ clan_limit }} slots
+        {% if !can_withdraw_clan %} · withdrawal: clan leader only{% endif %}
+      </p>
+      {% if clanwh.is_empty() %}
+      <p class="empty">Clan warehouse is empty.</p>
+      {% else %}
+      {% for it in clanwh %}
+      <div class="item-row{% if it.is_material %} material{% endif %}">
+        {% if !online && can_withdraw_clan %}<input class="check chk-clan{% if it.is_material %} mat-clan{% endif %}" type="checkbox" name="oids" value="{{ it.object_id }}">{% endif %}
+        <img src="{{ it.icon_url }}" alt="" loading="lazy">
+        <div class="meta">
+          <div class="nm">{{ it.name }}{% if !it.enchant.is_empty() %} <span style="color:#7ec8e3">{{ it.enchant }}</span>{% endif %}</div>
+          <div class="sub">x{{ it.count }} · id {{ it.item_id }}</div>
+        </div>
+      </div>
+      {% endfor %}
+      {% if !online && can_withdraw_clan %}
+      <div class="tools">
+        <button type="submit" name="action" value="clan_to_inv" class="clan" title="Withdraw selected to inventory">← Inventory</button>
+      </div>
+      {% endif %}
+      {% endif %}
+    </div>
+  </form>
+  {% endif %}
+
+</div>
+{% endblock %}

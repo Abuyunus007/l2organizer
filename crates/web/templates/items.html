@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Items — l2organizer{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Item lookup</h2>
+  <form class="search" method="get" action="/items">
+    <input type="text" name="id" value="{{ item_id }}" placeholder="Item ID (e.g. 57 = Adena)">
+    <button type="submit">Find owners</button>
+  </form>
+  <form class="search" method="get" action="/items">
+    <input type="search" name="owner" value="{{ owner_query }}" placeholder="...or find items by character/account name">
+    <button type="submit">Find characters</button>
+  </form>
+</div>
+
+{% if let Some(item) = item %}
+<div class="card">
+  <h2 style="display:flex; align-items:center; gap:0.75rem;">
+    <img src="{{ item.icon_url }}" alt="" style="width:32px;height:32px;image-rendering:pixelated;">
+    {{ item.name }} <span class="muted">(id {{ item.item_id }})</span>
+  </h2>
+  <p class="muted">Total in world: {{ item.total_count }} across {{ item.owner_count }} stacks</p>
+  {% if !owners.is_empty() %}
+  <table>
+    <thead>
+      <tr><th>Character</th><th>Account</th><th>Count</th><th>Enchant</th><th>Location</th></tr>
+    </thead>
+    <tbody>
+      {% for o in owners %}
+      <tr>
+        <td>{% if o.char_id > 0 %}<a href="/chars/{{ o.char_id }}">{{ o.char_name }}</a>{% else %}{{ o.char_name }}{% endif %}</td>
+        <td>{{ o.account_name }}</td>
+        <td>{{ o.count }}</td>
+        <td>{{ o.enchant }}</td>
+        <td>{{ o.loc }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p class="muted">No copies of this item exist in the database.</p>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if !owner_matches.is_empty() %}
+<div class="card">
+  <h2>Matching characters</h2>
+  <table>
+    <thead>
+      <tr><th>Character</th><th>Account</th><th>Level</th><th>PvP/PK</th><th>Last access</th></tr>
+    </thead>
+    <tbody>
+      {% for c in owner_matches %}
+      <tr>
+        <td><a href="/chars/{{ c.char_id }}">{{ c.char_name }}</a></td>
+        <td>{{ c.account_name }}</td>
+        <td>{{ c.level }}</td>
+        <td>{{ c.pvp_pk }}</td>
+        <td>{{ c.last_access }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

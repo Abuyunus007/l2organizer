@@ -1,0 +1,9 @@
+<div class="charnav">
+  <span class="who">{{ char_name }}</span>
+  <nav>
+    <a href="/my/char/{{ char_id }}" {% if active == "overview" %}class="on"{% endif %}>Overview</a>
+    <a href="/my/char/{{ char_id }}/items" {% if active == "items" %}class="on"{% endif %}>Items &amp; Storages</a>
+    {% if is_dwarf %}<a href="/my/char/{{ char_id }}/craft" {% if active == "craft" %}class="on"{% endif %}>Crafting</a>{% endif %}
+    <a href="/my/char/{{ char_id }}/shop" {% if active == "shop" %}class="on"{% endif %}>Offline Shop</a>
+  </nav>
+</div>

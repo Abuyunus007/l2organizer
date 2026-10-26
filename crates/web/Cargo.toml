@@ -1,0 +1,16 @@
+[package]
+name = "l2o-web"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+l2o-core = { path = "../core" }
+anyhow.workspace = true
+axum.workspace = true
+askama.workspace = true
+tokio.workspace = true
+tower-http.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+serde.workspace = true
+chrono.workspace = true

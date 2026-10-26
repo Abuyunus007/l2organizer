@@ -1,0 +1,59 @@
+{% extends "portal_base.html" %}
+
+{% block title %}{{ char_name }} — overview{% endblock %}
+{% block who %}{{ login }}{% if is_gm %} <span class="badge gm">GM</span>{% endif %}{% endblock %}
+
+{% block content %}
+{% include "char_nav.html" %}
+{% if !msg.is_empty() %}
+<div class="msg {% if msg_ok %}ok{% else %}err{% endif %}">{{ msg }}</div>
+{% endif %}
+
+<div class="card">
+  <h2>
+    {{ char_name }}
+    {% if online %}<span class="badge online">online</span>{% endif %}
+    {% if nobless %}<span class="badge nobless">noblesse</span>{% endif %}
+    {% if accesslevel > 0 %}<span class="badge gm">GM {{ accesslevel }}</span>{% endif %}
+  </h2>
+  {% if online %}
+  <p class="muted">This character is currently logged into the game. Item changes, crafting and shop changes are disabled until you log out completely.</p>
+  {% endif %}
+  <table>
+    <tbody>
+      <tr><th>Level</th><td>{{ level }}</td>
+          <th>Class</th><td>{{ classid }}</td>
+          <th>Race</th><td>{{ race }}</td></tr>
+      <tr><th>Vitals</th><td>{{ vitals }}</td>
+          <th>Clan</th><td>{{ clan_name }}</td>
+          <th>Title</th><td>{{ title }}</td></tr>
+      <tr><th>Karma</th><td>{{ karma }}</td>
+          <th>PvP/PK</th><td>{{ pvp_pk }}</td>
+          <th>Position</th><td>{{ position }}</td></tr>
+      <tr><th>Created</th><td>{{ create_date }}</td>
+          <th>Last access</th><td>{{ last_access }}</td>
+          <th>Delete pending</th><td>{{ delete_pending }}</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="statgrid">
+  <a class="statcard" href="/my/char/{{ char_id }}/items">
+    <div class="t">Items &amp; Storages</div>
+    <div class="v">{{ inv_used }} in inventory</div>
+    <div class="d">{{ wh_used }} in warehouse{% if in_clan %} · {{ clan_used }} in clan warehouse{% endif %} · {{ adena }} adena</div>
+  </a>
+  {% if is_dwarf %}
+  <a class="statcard" href="/my/char/{{ char_id }}/craft">
+    <div class="t">Crafting</div>
+    <div class="v">{{ recipe_count }} recipes known</div>
+    <div class="d">Craft from the recipe book while logged out</div>
+  </a>
+  {% endif %}
+  <a class="statcard" href="/my/char/{{ char_id }}/shop">
+    <div class="t">Offline Shop</div>
+    <div class="v">{{ shop_label }}</div>
+    <div class="d">WTS shops{% if is_dwarf %} and dwarf craft shops{% endif %} that stay open after logout</div>
+  </a>
+</div>
+{% endblock %}

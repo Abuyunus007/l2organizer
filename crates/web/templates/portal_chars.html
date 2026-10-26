@@ -1,0 +1,33 @@
+{% extends "portal_base.html" %}
+
+{% block title %}My Characters — l2organizer{% endblock %}
+{% block who %}{{ login }}{% if is_gm %} <span class="badge gm">GM</span>{% endif %}{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>My Characters</h2>
+  {% if characters.is_empty() %}
+    <p class="muted">No characters found on this account.</p>
+  {% else %}
+  <table>
+    <thead>
+      <tr><th>Character</th><th>Level</th><th>Clan</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for c in characters %}
+      <tr>
+        <td>
+          {{ c.char_name }}
+          {% if c.online %}<span class="badge online">online</span>{% endif %}
+        </td>
+        <td>{{ c.level }}</td>
+        <td>{{ c.clan_name }}</td>
+        <td><a href="/my/char/{{ c.char_id }}">Open</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+<p class="muted">Items can only be moved while the character is logged out of the game.</p>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "portal_base.html" %}
+
+{% block title %}{{ char_name }} — crafting{% endblock %}
+{% block who %}{{ login }}{% if is_gm %} <span class="badge gm">GM</span>{% endif %}{% endblock %}
+
+{% block content %}
+{% include "char_nav.html" %}
+{% if !msg.is_empty() %}
+<div class="msg {% if msg_ok %}ok{% else %}err{% endif %}">{{ msg }}</div>
+{% endif %}
+
+<div class="card">
+  <h3>Crafting</h3>
+  <p class="cap">Craft from your recipe book while logged out (dwarf crafting). Ingredients, MP/HP and the Create Item skill are checked exactly like in game. Ingredients are taken from the inventory. Currently: {{ vitals }}</p>
+  {% if online %}
+  <p class="muted">Character is online — crafting disabled until logout.</p>
+  {% endif %}
+  {% if craft_recipes.is_empty() %}
+  <p class="empty">No recipes in the recipe book.</p>
+  {% else %}
+  <table class="craft-table">
+    {% for r in craft_recipes %}
+    <tr>
+      <td><img src="{{ r.product_icon }}" class="cicon" alt=""></td>
+      <td>
+        <div class="nm">{{ r.name }} <span class="muted">→ {{ r.product_count }}x {{ r.product_name }}</span></div>
+        <div class="sub">level {{ r.level }} · success {{ r.success_rate }}%{% if r.mp_cost > 0 %} · MP {{ r.mp_cost }}{% endif %}{% if r.hp_cost > 0 %} · HP {{ r.hp_cost }}{% endif %}{% if r.dwarven %} · dwarven{% endif %}</div>
+        <div>
+          {% for i in r.ingredients %}
+          <span class="ing{% if !i.ok %} bad{% endif %}" title="{{ i.name }}"><img src="{{ i.icon }}" alt=""> {{ i.have }}/{{ i.need }}</span>
+          {% endfor %}
+        </div>
+      </td>
+      <td>
+        {% if !online %}
+          {% if r.ready %}
+          <form method="post" action="/my/char/{{ char_id }}/craft">
+            <input type="hidden" name="recipe_id" value="{{ r.id }}">
+            <input class="qty" type="number" name="quantity" value="1" min="1" max="50">
+            <button type="submit" class="warn">Craft</button>
+          </form>
+          {% else %}
+          <span class="bad">{{ r.reason }}</span>
+          {% endif %}
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+</div>
+{% endblock %}

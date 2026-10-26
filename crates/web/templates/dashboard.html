@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — l2organizer{% endblock %}
+
+{% block content %}
+<div class="stats">
+  <div class="stat"><div class="num">{{ stats_online }}</div><div class="lbl">Online now</div></div>
+  <div class="stat"><div class="num">{{ stats_accounts }}</div><div class="lbl">Accounts</div></div>
+  <div class="stat"><div class="num">{{ stats_characters }}</div><div class="lbl">Characters</div></div>
+  <div class="stat"><div class="num">{{ stats_clans }}</div><div class="lbl">Clans</div></div>
+  <div class="stat"><div class="num">{{ stats_items }}</div><div class="lbl">Item stacks</div></div>
+  <div class="stat"><div class="num">{{ stats_adena }}</div><div class="lbl">Adena in world</div></div>
+</div>
+
+<div class="card">
+  <h2>Online players</h2>
+  {% if online.is_empty() %}
+    <p class="muted">Nobody is online right now.</p>
+  {% else %}
+  <table>
+    <thead>
+      <tr><th>Character</th><th>Account</th><th>Level</th><th>Class</th><th>Clan</th></tr>
+    </thead>
+    <tbody>
+      {% for p in online %}
+      <tr>
+        <td><a href="/chars/{{ p.char_id }}">{{ p.char_name }}</a></td>
+        <td>{{ p.account_name }}</td>
+        <td>{{ p.level }}</td>
+        <td>{{ p.classid }}</td>
+        <td>{{ p.clan_name }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+{% endblock %}

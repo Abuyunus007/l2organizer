@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}{{ login }} — account{% endblock %}
+
+{% block content %}
+{% if !msg.is_empty() %}
+<div class="msgdiv {% if msg_ok %}ok{% else %}err{% endif %}">{{ msg }}</div>
+{% endif %}
+
+<div class="card">
+  <h2>Account: {{ login }} <span class="muted">(access {{ access_level }})</span></h2>
+  <table>
+    <tbody>
+      <tr><th>Last active</th><td>{{ last_active }}</td>
+          <th>Last IP</th><td>{{ last_ip }}</td>
+          <th>Email</th><td>{{ email }}</td></tr>
+      <tr><th>Created</th><td>{{ created }}</td>
+          <th>Ban status</th><td colspan="3">{{ ban }}</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h3>Punishments</h3>
+  {% if punishments.is_empty() %}
+  <p class="muted">No punishments recorded.</p>
+  {% else %}
+  <table>
+    <thead><tr><th>#</th><th>Affect</th><th>Type</th><th>Expires</th><th>Reason</th><th>By</th></tr></thead>
+    <tbody>
+      {% for p in punishments %}
+      <tr><td>{{ p.affect }}</td><td>{{ p.kind }}</td><td>{{ p.expires }}</td><td>{{ p.reason }}</td><td>{{ p.by }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <h4>Ban this account</h4>
+  <form method="post" action="/account/{{ login }}/ban" class="rowform" onsubmit="return confirm('Ban account {{ login }}?')">
+    <select name="duration">
+      <option value="1h">1 hour</option>
+      <option value="1d">1 day</option>
+      <option value="7d" selected>7 days</option>
+      <option value="30d">30 days</option>
+      <option value="perm">permanent</option>
+    </select>
+    <input type="text" name="reason" maxlength="200" placeholder="Reason" required>
+    <button type="submit" class="dangerbtn">Ban</button>
+  </form>
+  <form method="post" action="/account/{{ login }}/unban" onsubmit="return confirm('Remove all bans for {{ login }}?')">
+    <button type="submit">Unban (removes all ban entries)</button>
+  </form>
+  <p class="muted">Temporary bans take effect immediately at login. Permanent bans also block the game server.</p>
+</div>
+
+<div class="card">
+  <h3>Characters</h3>
+  {% if characters.is_empty() %}
+  <p class="muted">No characters.</p>
+  {% else %}
+  <table>
+    <thead><tr><th>Character</th><th>Level</th><th>Class</th><th>Clan</th><th>PvP/PK</th><th>Last access</th><th></th></tr></thead>
+    <tbody>
+      {% for c in characters %}
+      <tr>
+        <td><a href="/chars/{{ c.char_id }}">{{ c.char_name }}</a></td>
+        <td>{{ c.level }}</td>
+        <td>{{ c.classid }}</td>
+        <td>{{ c.clan_name }}</td>
+        <td>{{ c.pvp_pk }}</td>
+        <td>{{ c.last_access }}</td>
+        <td>{% if c.online %}<span class="badge online">online</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+{% endblock %}

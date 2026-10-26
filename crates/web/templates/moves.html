@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Item moves — l2organizer{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Item move journal</h2>
+  <p class="muted">Every storage move performed through the player portal (latest 200).</p>
+  <table>
+    <thead>
+      <tr>
+        <th>When</th><th>Player account</th><th>Character</th><th>Item</th>
+        <th>Count</th><th>Ench</th><th>From</th><th>To</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in moves %}
+      <tr>
+        <td>{{ m.when }}</td>
+        <td>{{ m.actor }}</td>
+        <td><a href="/chars/{{ m.char_id }}">{{ m.char_name }}</a></td>
+        <td>{{ m.item_name }}</td>
+        <td>{{ m.count }}</td>
+        <td>{{ m.enchant }}</td>
+        <td>{{ m.from_loc }}</td>
+        <td>{{ m.to_loc }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if moves.is_empty() %}<p class="muted">No moves recorded yet.</p>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Accounts — l2organizer{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h2>Accounts</h2>
+  <form class="search" method="get" action="/accounts">
+    <input type="search" name="q" value="{{ q }}" placeholder="Search by account name...">
+    <button type="submit">Search</button>
+  </form>
+  <table>
+    <thead>
+      <tr>
+        <th>Account</th><th>Access</th><th>Last active</th><th>Last IP</th>
+        <th>Email</th><th>Created</th><th>Ban</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in accounts %}
+      <tr>
+        <td><a href="/account/{{ a.login }}">{{ a.login }}</a></td>
+        <td>{% if a.access_level > 0 %}<span class="badge gm">{{ a.access_level }}</span>{% else %}{{ a.access_level }}{% endif %}</td>
+        <td>{{ a.last_active }}</td>
+        <td>{{ a.last_ip }}</td>
+        <td>{{ a.email }}</td>
+        <td>{{ a.created }}</td>
+        <td>{{ a.ban }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if accounts.is_empty() %}<p class="muted">No accounts found.</p>{% endif %}
+</div>
+{% endblock %}
